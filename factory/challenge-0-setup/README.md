@@ -11,6 +11,8 @@ By the end of this challenge, you will have:
 - ✅ Verified authentication from your local machine to Foundry
 - ✅ Confirmed your agent endpoint is working
 
+![setup](./images/setup.png)
+
 ## Get Started
 
 There are two ways to get started — pick one:

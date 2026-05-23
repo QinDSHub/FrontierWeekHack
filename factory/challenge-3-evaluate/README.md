@@ -11,6 +11,7 @@ By the end of this challenge, you will have:
 - ✅ Interpreted evaluation metrics and identified areas for improvement
 - ✅ Understanding of how to integrate evaluations into a CI/CD pipeline
 
+![evaluate](./images/evaluate.png)
 
 ## Context
 
