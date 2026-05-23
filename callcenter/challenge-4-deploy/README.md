@@ -10,6 +10,8 @@ The individual agents you built in Challenge 1 are valuable — but in productio
 **together** as an automated pipeline. In this challenge you wire the two agents into a full
 call center triage workflow, run it from code, then build and test it visually in the Foundry portal.
 
+![deploy](./images/deploy.png)
+
 ## Learning Objectives
 
 - Deploy persistent production agents (create once, reuse forever)

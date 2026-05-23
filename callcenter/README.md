@@ -2,6 +2,8 @@
 
 ## Background
 
+![scenario](./images/scenario.png)
+
 **NovaTel Communications** is a telecom provider handling hundreds of customer calls daily across their support center. Today's queue has 7 active calls spanning different issue types:
 
 - **CALL-001** — Maria Gonzalez (Premium, 3 years) — Unexpected charge dispute
@@ -12,7 +14,11 @@
 - **CALL-006** — David Park (Premium, 1 year) — Charged for returned device
 - **CALL-007** — Emma Wilson (Basic, 8 months) — Suspected account hack
 
+
+
 ## Your Mission
+
+![agentic-orchestration](./images/agentic-orchestration.png)
 
 Build an AI agent system that:
 
@@ -44,26 +50,7 @@ Build an AI agent system that:
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                   Microsoft Foundry                       │
-│                                                         │
-│  ┌─────────────────┐      ┌──────────────────────┐     │
-│  │ Intent Agent    │      │  Resolution Advisor  │     │
-│  │ (+ tool:        │─────▶│  Agent               │     │
-│  │  lookup_cust.)  │      │                      │     │
-│  └────────┬────────┘      └──────────┬───────────┘     │
-│           │                          │                  │
-│           ▼                          ▼                  │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │       Call Center Triage Workflow                │   │
-│  └─────────────────────────────────────────────────┘   │
-│                                                         │
-│  ┌──────────────┐  ┌───────────────┐  ┌────────────┐  │
-│  │ App Insights │  │  Evaluation   │  │  Tracing   │  │
-│  └──────────────┘  └───────────────┘  └────────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
+![architecture](./images/architecture.png)
 
 ## Next Steps
 
