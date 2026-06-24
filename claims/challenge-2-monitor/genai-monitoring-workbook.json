@@ -4,20 +4,248 @@
     {
       "type": 1,
       "content": {
-        "json": "# Claims GenAI Tracing Workbook\nClaim-first monitoring across traces, requests, and dependencies."
+        "json": "# 🗂️ Claims GenAI Tracing Workbook\nClaim-first observability for the insurance claims agents across **traces**, **requests**, and **dependencies**. Use the time range selector to scope every panel below.\n\nThis workbook tracks the `claims-triage-agent` and `claims-decision-agent` as they triage and decide claims `CLM-001`–`CLM-005`."
       },
       "name": "text-header"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "time-range-param",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "label": "Time Range",
+            "type": 4,
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                { "durationMs": 1800000 },
+                { "durationMs": 3600000 },
+                { "durationMs": 14400000 },
+                { "durationMs": 43200000 },
+                { "durationMs": 86400000 },
+                { "durationMs": 259200000 },
+                { "durationMs": 604800000 }
+              ],
+              "allowCustom": true
+            },
+            "timeContext": { "durationMs": 86400000 },
+            "value": { "durationMs": 86400000 }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components"
+      },
+      "name": "parameters-time"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## At a glance"
+      },
+      "name": "text-overview-header"
     },
     {
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp > ago(24h) | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend ClaimId = extract(@'(CLM-\\d{3})', 1, Payload), AgentName = extract(@'(claims-triage-agent|claims-decision-agent|tracing-test-agent)', 1, Payload), Decision = extract(@'(APPROVE|REQUEST DOCUMENTS|INVESTIGATE|DENY)', 1, Payload), Urgency = extract(@'(IMMEDIATE|WITHIN 48H|STANDARD)', 1, Payload) | where isnotempty(ClaimId) or isnotempty(AgentName) | summarize TraceCount = count(), Operations = dcount(operation_Id), LastSeen = max(timestamp) by ClaimId, AgentName, Decision, Urgency | order by TraceCount desc",
+        "query": "let base = union isfuzzy=true traces, requests, dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend ClaimId = extract(@'(CLM-\\d{3})', 1, Payload), AgentName = extract(@'(claims-triage-agent|claims-decision-agent|tracing-test-agent)', 1, Payload) | where isnotempty(ClaimId) or isnotempty(AgentName); base | summarize Value = count() | extend Metric = 'Total Traces', Order = 0 | union (base | summarize Value = dcountif(AgentName, isnotempty(AgentName)) | extend Metric = 'Agents Active', Order = 1) | union (base | summarize Value = dcountif(ClaimId, isnotempty(ClaimId)) | extend Metric = 'Claims Seen', Order = 2) | union (base | summarize Value = dcount(operation_Id) | extend Metric = 'Operations', Order = 3) | order by Order asc | project Metric, Value",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
-        "visualization": "table"
+        "visualization": "tiles",
+        "tileSettings": {
+          "titleContent": { "columnMatch": "Metric", "formatter": 1 },
+          "leftContent": {
+            "columnMatch": "Value",
+            "formatter": 12,
+            "formatOptions": { "palette": "blue" },
+            "numberFormat": { "unit": 17, "options": { "maximumFractionDigits": 0 } }
+          },
+          "showBorder": true,
+          "size": "auto"
+        }
       },
-      "name": "query-claim-counts"
+      "name": "tiles-overview"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Agent KPIs\nInvocations, distinct operations, latency, and token usage per agent."
+      },
+      "name": "text-agent-kpis"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend AgentName = extract(@'(claims-triage-agent|claims-decision-agent|tracing-test-agent)', 1, Payload) | where isnotempty(AgentName) | extend DurationMs = todouble(column_ifexists('duration', real(null))) | extend InputTokens = toint(coalesce(customDimensions['gen_ai.usage.input_tokens'], customDimensions['gen_ai.usage.prompt_tokens'])) | extend OutputTokens = toint(coalesce(customDimensions['gen_ai.usage.output_tokens'], customDimensions['gen_ai.usage.completion_tokens'])) | summarize Invocations = count(), Operations = dcount(operation_Id), AvgDurationMs = round(avg(DurationMs), 1), InputTokens = sum(InputTokens), OutputTokens = sum(OutputTokens), LastSeen = max(timestamp) by AgentName | order by Invocations desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "AgentName", "formatter": 1 },
+            { "columnMatch": "Invocations", "formatter": 4, "formatOptions": { "palette": "blue" } },
+            { "columnMatch": "AvgDurationMs", "formatter": 8, "formatOptions": { "palette": "yellowOrangeRed" }, "numberFormat": { "unit": 23, "options": { "maximumFractionDigits": 1 } } },
+            { "columnMatch": "InputTokens", "formatter": 0, "numberFormat": { "unit": 17, "options": { "maximumFractionDigits": 0 } } },
+            { "columnMatch": "OutputTokens", "formatter": 0, "numberFormat": { "unit": 17, "options": { "maximumFractionDigits": 0 } } }
+          ]
+        }
+      },
+      "name": "table-agent-kpis"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend AgentName = extract(@'(claims-triage-agent|claims-decision-agent|tracing-test-agent)', 1, Payload) | where isnotempty(AgentName) | summarize AvgDurationMs = avg(duration) by bin(timestamp, 5m), AgentName | order by timestamp asc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "timechart"
+      },
+      "customWidth": "50",
+      "name": "chart-latency-over-time"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend AgentName = extract(@'(claims-triage-agent|claims-decision-agent|tracing-test-agent)', 1, Payload) | where isnotempty(AgentName) | summarize Invocations = count() by bin(timestamp, 15m), AgentName | order by timestamp asc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart",
+        "chartSettings": { "ySettings": { "numberFormatSettings": { "unit": 17 } } }
+      },
+      "customWidth": "50",
+      "name": "chart-invocations-over-time"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Claims, Decisions & Urgency\nEvery trace mapped back to a claim, with the agent decision and urgency it produced."
+      },
+      "name": "text-claims"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend ClaimId = extract(@'(CLM-\\d{3})', 1, Payload), AgentName = extract(@'(claims-triage-agent|claims-decision-agent|tracing-test-agent)', 1, Payload), Decision = extract(@'(APPROVE|REQUEST DOCUMENTS|INVESTIGATE|DENY)', 1, Payload), Urgency = extract(@'(IMMEDIATE|WITHIN 48H|STANDARD)', 1, Payload) | where isnotempty(ClaimId) | summarize TraceCount = count(), Operations = dcount(operation_Id), Agents = make_set_if(AgentName, isnotempty(AgentName)), Decision = take_anyif(Decision, isnotempty(Decision)), Urgency = take_anyif(Urgency, isnotempty(Urgency)), LastSeen = max(timestamp) by ClaimId | order by ClaimId asc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "ClaimId", "formatter": 1 },
+            { "columnMatch": "TraceCount", "formatter": 4, "formatOptions": { "palette": "green" } },
+            { "columnMatch": "Decision", "formatter": 1 },
+            { "columnMatch": "Urgency", "formatter": 1 }
+          ]
+        }
+      },
+      "name": "table-claims"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Decision & Urgency Distribution\nHow the agents are adjudicating across recent claims."
+      },
+      "name": "text-decision"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend Decision = extract(@'(APPROVE|REQUEST DOCUMENTS|INVESTIGATE|DENY)', 1, Payload) | where isnotempty(Decision) | summarize Count = count() by Decision | order by Count desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "50",
+      "name": "chart-decision-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend Urgency = extract(@'(IMMEDIATE|WITHIN 48H|STANDARD)', 1, Payload) | where isnotempty(Urgency) | summarize Count = count() by Urgency | order by Count desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart",
+        "chartSettings": { "ySettings": { "numberFormatSettings": { "unit": 17 } } }
+      },
+      "customWidth": "50",
+      "name": "chart-urgency-distribution"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Claim Type Mix\nDistribution of claim types flowing through the agents."
+      },
+      "name": "text-claim-types"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend ClaimType = extract(@'(auto_collision|auto_theft|property_water_damage|property_fire)', 1, Payload) | where isnotempty(ClaimType) | summarize Count = count() by ClaimType | order by Count desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "name": "chart-claim-types"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Tool Call Health\nUsage of the `assess_claim` function tool the agents call to score claim metrics against thresholds."
+      },
+      "name": "text-tools"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp {TimeRange} | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend Tool = extract(@'(assess_claim)', 1, Payload) | where isnotempty(Tool) | extend DurationMs = todouble(column_ifexists('duration', real(null))) | summarize Calls = count(), Operations = dcount(operation_Id), AvgDurationMs = round(avg(DurationMs), 1), LastSeen = max(timestamp) by Tool | order by Calls desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "Tool", "formatter": 1 },
+            { "columnMatch": "Calls", "formatter": 4, "formatOptions": { "palette": "blue" } }
+          ]
+        }
+      },
+      "name": "table-tool-health"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Errors & Failures\nFailed dependencies, failed requests, and exceptions in the selected window. An empty table here is good news."
+      },
+      "name": "text-errors"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true (dependencies | where success == false), (requests | where success == false), exceptions | where timestamp {TimeRange} | extend Payload = strcat(tostring(name), ' ', tostring(target), ' ', tostring(column_ifexists('outerMessage', '')), ' ', tostring(column_ifexists('problemId', '')), ' ', tostring(customDimensions)) | extend AgentName = extract(@'(claims-triage-agent|claims-decision-agent|tracing-test-agent)', 1, Payload), ClaimId = extract(@'(CLM-\\d{3})', 1, Payload) | project timestamp, Type = itemType, AgentName, ClaimId, Problem = coalesce(tostring(column_ifexists('problemId', '')), tostring(column_ifexists('name', ''))), resultCode = column_ifexists('resultCode', '') | order by timestamp desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "Type", "formatter": 1 },
+            { "columnMatch": "Problem", "formatter": 1 }
+          ]
+        }
+      },
+      "name": "table-errors"
     }
   ],
   "fromTemplateId": "ClaimsGenAITracingWorkbookV2",

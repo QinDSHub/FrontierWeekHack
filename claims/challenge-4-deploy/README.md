@@ -134,7 +134,7 @@ CLAIMSIGHT INSURANCE — CLAIMS PROCESSING REPORT
 > never arrives. Paste the claims data directly into your message so the agents can
 > work without needing the tool.
 
-1. Open **claims-processing-workflow** → **Playground**
+1. Open **claims-processing-workflow** → **Preview**
 2. Paste the following message (data is pre-embedded so no tool calls are needed):
 
    ```

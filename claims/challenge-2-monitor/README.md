@@ -76,11 +76,13 @@ Once the script finishes, your traces are live. Explore them in the Azure Portal
 1. Go to [portal.azure.com](https://portal.azure.com) → search for **Application Insights** → open `foundry-hack-insights-<suffix>`
 2. Left sidebar → **Investigate** → **Search**
 
-![Application Insights Search](./images/screen21.png)
+![Application Insights Search](./images/screen23.png)
 
 3. Set the time range to **Last 30 minutes** and click **Search** — you'll see individual trace events
 4. Look for traces where your agents were invoked.
    You can inspect the timestamp, operation ID, and message payload to confirm calls reached the model.
+![alt text](./images/agentstracing.png)
+
 5. Click on `Claims Decision Agent` instance.
 You will see the **end-to-end transaction trace** showing:
    - The full agent conversation (user input with claim metrics → agent response with decision recommendations)
@@ -90,7 +92,7 @@ You will see the **end-to-end transaction trace** showing:
    - Any content filtering blockers that violated default Responsible AI standards
    - This view lets you inspect exactly what the agent "saw" and "reasoned" to understand any misclassifications or performance issues
 6. Open the included **App Insights Workbook** for a claim-first operations view:
-   1. In Application Insights, go to **Workbooks** → **+ New** → **Advanced Editor**.
+   1. In Application Insights, go to **Workbooks** → **+ New** → **Advanced Editor (</>)**.
    2. Open [genai-monitoring-workbook.json](genai-monitoring-workbook.json) and copy its JSON.
    3. Paste into the Advanced Editor, then click **Apply** and **Done Editing**.
    4. Save it as **Claims GenAI Tracing Workbook**.
