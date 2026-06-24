@@ -45,7 +45,7 @@ echo ">>> Creating AI Foundry resource (AIServices)..."
 SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 az rest \
     --method PUT \
-    --url "https://management.azure.com/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.CognitiveServices/accounts/$FOUNDRY_RESOURCE_NAME?api-version=2024-10-01" \
+    --url "https://management.azure.com/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.CognitiveServices/accounts/$FOUNDRY_RESOURCE_NAME?api-version=2026-03-01" \
     --body "{\"kind\": \"AIServices\", \"sku\": {\"name\": \"S0\"}, \"location\": \"$LOCATION\", \"properties\": {\"customSubDomainName\": \"$FOUNDRY_RESOURCE_NAME\", \"publicNetworkAccess\": \"Enabled\", \"allowProjectManagement\": true}}" \
     --output none || true
 
@@ -154,7 +154,7 @@ APP_INSIGHTS_RESOURCE_ID=$(az monitor app-insights component show \
 echo ">>> Connecting Application Insights to Foundry project..."
 az rest \
     --method PATCH \
-    --url "https://management.azure.com/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.CognitiveServices/accounts/$FOUNDRY_RESOURCE_NAME/projects/$PROJECT_NAME?api-version=2024-10-01" \
+    --url "https://management.azure.com/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.CognitiveServices/accounts/$FOUNDRY_RESOURCE_NAME/projects/$PROJECT_NAME?api-version=2026-03-01" \
     --body "{\"properties\": {\"applicationInsights\": \"$APP_INSIGHTS_RESOURCE_ID\"}}" \
     --output none || true ------------------------------------------------
 echo ">>> Retrieving Foundry endpoint and keys..."

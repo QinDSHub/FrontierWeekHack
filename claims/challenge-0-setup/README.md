@@ -25,15 +25,23 @@ No local installs needed. Everything runs in a cloud dev environment.
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/microsoft/FrontierWeekHack)
 
-1. Click the badge above (select your fork if applicable)
-2. Wait for the Codespace to build (~2 min)
-3. In the terminal, login to Azure and deploy your scenario:
+After you click the button above, you will see a **Create codespace** prompt. Select these options:
+
+- **Repository:** your forked repo (not `microsoft/FrontierWeekHack`)
+- **Branch:** the workshop branch for this event (use the default shown for your fork unless your facilitator says otherwise)
+- **Region:** pick your preferred region, or keep the default
+- **Machine type:** **2-core**
+
+1. Click the badge above.
+2. In the **Create codespace** prompt, select the options listed above, then create the Codespace.
+3. Wait for the Codespace to build (~2 min).
+4. In the terminal, login to Azure and deploy your scenario:
 
 ```bash
 az login
 ```
 
-4. Continue to **Deploy Infrastructure** below.
+5. Continue to **Deploy Infrastructure** below.
 
 ---
 
