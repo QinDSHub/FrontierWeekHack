@@ -17,7 +17,7 @@ By the end of this challenge, you will have:
 
 > [!NOTE]
 > Before you begin, make sure you have:
-> - An **Azure subscription** where you hold both the **Contributor** role (to deploy the infrastructure) and the **Foundry User** role on the Foundry account (to build, evaluate, and run agents in Challenges 1–4).
+> - An **Azure subscription** where you hold both the **Contributor** role (to deploy the infrastructure) and the **Foundry User** role (to build, evaluate, and run agents in Challenges 1–4).
 > - A **GitHub handle** (account) to fork this repository and run it in GitHub Codespaces.
 >
 > Subscription **Owner** (or Contributor) rights alone are **not** sufficient. Those grant control-plane access to create and manage resources, but building and running agents are data-plane operations that require the separate **Foundry User** role assigned on the Foundry account. An Owner can self-assign it; a Contributor must ask an admin to assign it after deployment.
