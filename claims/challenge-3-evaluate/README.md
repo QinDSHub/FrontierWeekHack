@@ -69,10 +69,10 @@ The evaluation dataset has already been prepared for you as [eval_portal.jsonl](
 ### Step 2: Configure the evaluation
 
 3. Select **Agent** as the evaluation target
-4. Choose `claims-triage-agent` from the dropdown
+4. Choose `claims-triage-agent` or `claims-decision-agent` from the dropdown
 5. Select **Individual Turns** and then **Existing Dataset**
 6. Click on **Upload new dataset**. 
-You must enter a dataset name first — the upload stays disabled until you do. Type a name (e.g. `claims-eval`), then add the file located on `claims/challenge-3-evaluate/eval_portal.jsonl` and confirm the upload.
+You must enter a dataset name first — the upload stays disabled until you do. Type a name, then add the file located on `claims/challenge-3-evaluate/triage_eval_portal.jsonl` for `claims-triage-agent` or `claims/challenge-3-evaluate/decision_eval_portal.jsonl` for `claims-decision-agent`, and then confirm the upload.
 7. Leave the **Field Mapping** and **Configure Agents** fields as is.
 8. In the **Criteria** step, keep only **Coherence** and **Fluency**. Remove every other evaluator — in particular **deselect Tool Call Accuracy**, since the agents can't execute the local tools during evaluation and will always score low on it. Trimming the evaluator list also makes the run significantly faster.
 9. Leave the Evaluation Name as is or configure to your liking.
